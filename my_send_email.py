@@ -7,6 +7,8 @@ from email.mime.base import MIMEBase
 from find_file import Affiliate
 import os
 import time
+from multiprocessing.pool import ThreadPool
+from functools import partial
 
 start = time.time()
 
@@ -64,12 +66,18 @@ def send_email(affiliate, myemail, password, Subject, body):
     s.quit()
 
 
+pool = ThreadPool(8)
+_list = []
 for i in affiliates.keys():
     affiliate_ = Affiliate(i, affiliates[i])
     if affiliate_.email_attachment is None:
         pass
     else:
-        send_email(affiliate_, MY_EMAIL, PASSWORD, title, body)
+        _list.append(affiliate_)
+
+
+send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+pool.map(send_email_multi, _list)
 
 end = time.time()
 print(f"{end - start}")
