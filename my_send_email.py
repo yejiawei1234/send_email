@@ -9,6 +9,7 @@ import os
 import time
 from multiprocessing.pool import ThreadPool
 from functools import partial
+import asyncio
 
 start = time.time()
 
@@ -46,7 +47,7 @@ def attach_file(msg, file_path, filename):
     return msg
 
 
-def send_email(affiliate, myemail, password, Subject, body):
+async def send_email(affiliate, myemail, password, Subject, body):
     s = smtplib.SMTP(host='smtp.gmail.com', port=587)
     s.starttls()
     s.login(myemail, password)
@@ -66,7 +67,7 @@ def send_email(affiliate, myemail, password, Subject, body):
     s.quit()
 
 
-pool = ThreadPool(8)
+# pool = ThreadPool(8)
 _list = []
 for i in affiliates.keys():
     affiliate_ = Affiliate(i, affiliates[i])
@@ -76,8 +77,16 @@ for i in affiliates.keys():
         _list.append(affiliate_)
 
 
-send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
-pool.map(send_email_multi, _list)
+# send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+# pool.map(send_email_multi, _list)
+
+
+loop = asyncio.get_event_loop()
+tasks = []
+for i in _list:
+    tasks.append(loop.create_task(send_email(i, MY_EMAIL, PASSWORD, title, body)))
+loop.run_until_complete(asyncio.wait(tasks))
 
 end = time.time()
 print(f"{end - start}")
+# but no speed up
