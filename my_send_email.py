@@ -86,27 +86,35 @@ def send_one_email(affiliate, myemail, password, Subject, body):
     s.send_message(msg)
     s.quit()
 
-# pool = ThreadPool(8)
-# _list = []
-# for i in affiliates.keys():
-#     affiliate_ = Affiliate(i, affiliates[i])
-#     if affiliate_.email_attachment is None:
-#         pass
-#     else:
-#         _list.append(affiliate_)
-#
-#
-# send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
-# pool.map(send_email_multi, _list)
-pool = ThreadPool(8)
-_list = []
-for i in affiliates.keys():
-    affiliate_ = AffiliateOne(i, affiliates[i])
-    if affiliate_.email_attachment is None:
-        pass
-    else:
-        _list.append(affiliate_)
-send_one_email_multi = partial(send_one_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
-pool.map(send_one_email_multi, _list)
+
+def oneweek(affiliates):
+    pool = ThreadPool(8)
+    _list = []
+    for i in affiliates.keys():
+        affiliate_ = Affiliate(i, affiliates[i])
+        if affiliate_.email_attachment is None:
+            pass
+        else:
+            _list.append(affiliate_)
+
+    send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+    pool.map(send_email_multi, _list)
+
+
+def oneday(affiliates):
+    pool = ThreadPool(8)
+    _list = []
+    for i in affiliates.keys():
+        affiliate_ = AffiliateOne(i, affiliates[i])
+        if affiliate_.email_attachment is None:
+            pass
+        else:
+            _list.append(affiliate_)
+    send_one_email_multi = partial(send_one_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+    pool.map(send_one_email_multi, _list)
+
+
+oneday(affiliates)
+oneweek(affiliates)
 end = time.time()
-print(f"{end - start}")
+print(f"{end - start:.02f}")
