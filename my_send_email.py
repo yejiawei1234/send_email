@@ -4,7 +4,7 @@ import json
 from email.mime.text import MIMEText
 from email import encoders
 from email.mime.base import MIMEBase
-from find_file import Affiliate
+from find_file import Affiliate, AffiliateOne
 import os
 import time
 from multiprocessing.pool import ThreadPool
@@ -66,18 +66,47 @@ def send_email(affiliate, myemail, password, Subject, body):
     s.quit()
 
 
+def send_one_email(affiliate, myemail, password, Subject, body):
+    s = smtplib.SMTP(host='smtp.gmail.com', port=587)
+    s.starttls()
+    s.login(myemail, password)
+    msg = MIMEMultipart()
+
+    msg['From'] = myemail
+    msg['To'] = ", ".join(affiliate.email)
+    msg['Subject'] = Subject
+
+    msg.attach(MIMEText(body, 'plain'))
+    file_path = affiliate.email_attachment.get(affiliate.name, None)
+    if file_path:
+        for i in file_path:
+            name = os.path.basename(i)
+            msg = attach_file(msg, i, name)
+
+    s.send_message(msg)
+    s.quit()
+
+# pool = ThreadPool(8)
+# _list = []
+# for i in affiliates.keys():
+#     affiliate_ = Affiliate(i, affiliates[i])
+#     if affiliate_.email_attachment is None:
+#         pass
+#     else:
+#         _list.append(affiliate_)
+#
+#
+# send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+# pool.map(send_email_multi, _list)
 pool = ThreadPool(8)
 _list = []
 for i in affiliates.keys():
-    affiliate_ = Affiliate(i, affiliates[i])
+    affiliate_ = AffiliateOne(i, affiliates[i])
     if affiliate_.email_attachment is None:
         pass
     else:
         _list.append(affiliate_)
-
-
-send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
-pool.map(send_email_multi, _list)
-
+send_one_email_multi = partial(send_one_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
+pool.map(send_one_email_multi, _list)
 end = time.time()
 print(f"{end - start}")
