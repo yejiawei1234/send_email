@@ -92,9 +92,7 @@ def oneweek(affiliates):
     _list = []
     for i in affiliates.keys():
         affiliate_ = Affiliate(i, affiliates[i])
-        if affiliate_.email_attachment is None:
-            pass
-        else:
+        if affiliate_.email_attachment.values():
             _list.append(affiliate_)
 
     send_email_multi = partial(send_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
@@ -106,15 +104,14 @@ def oneday(affiliates):
     _list = []
     for i in affiliates.keys():
         affiliate_ = AffiliateOne(i, affiliates[i])
-        if affiliate_.email_attachment is None:
-            pass
-        else:
+        if affiliate_.email_attachment.values():
             _list.append(affiliate_)
+
     send_one_email_multi = partial(send_one_email, myemail=MY_EMAIL, password=PASSWORD, Subject=title, body=body)
     pool.map(send_one_email_multi, _list)
 
 
-oneday(affiliates)
+#oneday(affiliates)
 oneweek(affiliates)
 end = time.time()
 print(f"{end - start:.02f}")
